@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h3>Edit Profile @{{request.user}}</h3>
+    <form id="form">
+        {% csrf_token %}
+        <label for="">Username</label>
+        <input value="{{profile.user.username}}" id="username" placeholder="{{profile.user.username}}" type="text">
+        <p id="err"></p>
+        <br><br><br>
+        <label for="">Name</label>
+        <input value="{{profile.name}}" id="nameuser" placeholder="{{profile.name}}" type="text">
+        <br><br><br>
+        
+        <label for="">Bio</label>
+        <input id="bio" value="{{profile.bio}}" placeholder="{{profile.bio}}" type="text">
+        <br><br><br>
+
+        <label for="">Profile Image</label>
+        <input id="profileimage" type="file" name="" >
+        <button id="removeprofile">Remove Profile</button>
+        <br><br><br>
+        <label for="">Private</label>
+        <input id="privatestatus" type="checkbox" name="">
+        <br><br><br>
+        <input type="submit" value="submit">
+    </form>
+
+    <script>
+        function getCookie(name) {
+		    var cookieValue = null;
+		    if (document.cookie && document.cookie !== '') {
+		        var cookies = document.cookie.split(';');
+		        for (var i = 0; i < cookies.length; i++) {
+		            var cookie = cookies[i].trim();
+		            // Does this cookie string begin with the name we want?
+		            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+		                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+		                break;
+		            }
+		        }
+		    }
+		    return cookieValue;
+		}
+		var csrftoken = getCookie('csrftoken');
+        checkbool = '{{profile.privateStatus}}'
+        if (checkbool === 'True'){
+            document.getElementById('privatestatus').checked = true
+        }else{
+            document.getElementById('privatestatus').checked = false
+        }
+        console.log(checkbool)
+        let removeprofilebtn = document.getElementById('removeprofile')
+        removeprofilebtn.addEventListener('click' ,(e)=>{
+            e.preventDefault()
+            let removeurl = `/api/removeprofile/`
+            fetch(removeurl , {
+                method:'POST',
+                headers:{
+                    'Content-type':'application/json',
+                    'X-CSRFToken':csrftoken,
+                },
+                body:JSON.stringify({
+                    'user':'{{request.user}}'
+                })
+            
+            }).then((Response)=>{
+                return Response.json()
+            }).then((data)=>{
+                console.log(data)
+            })
+        })
+        let form = document.getElementById('form')
+        form.addEventListener('submit' , (e)=>{
+            e.preventDefault()
+            url = "http://127.0.0.1:8000/api/updateprofile/"
+            let formdata = new FormData()
+            let username = document.getElementById('username').value
+            let name = document.getElementById('nameuser').value
+            let bio = document.getElementById('bio').value
+            let profileimg = document.querySelector('#profileimage')
+            let privatestat = document.querySelector("#privatestatus").checked
+            console.log(privatestat)
+            formdata.append('bio',bio)
+            let user = ''
+            if (username != ""){
+                formdata.append('username' ,username)
+                user = username
+            }else{
+                user = '{{request.user}}'
+            }
+            formdata.append('name' ,name)
+            formdata.append('privateStatus' , privatestat)
+            if (profileimg.files.length != 0){
+                formdata.append('profileimage' ,profileimg.files[0])
+            }
+            fetch(url ,{
+                method:'POST',
+                    headers: {
+                        'X-CSRFToken':csrftoken,
+                    },
+                    body:formdata
+            }).then((Response)=>{
+                return Response.json()
+            }).then(function(data){
+                console.log(data)
+                if (data == "username taken"){
+                    form.reset
+                    document.getElementById('err').innerHTML  = 'username taken'
+                }else{
+                    window.location.href = `/profile/${user}`
+                }
+            })
+        })
+
+    </script>
+</body>
+</html>

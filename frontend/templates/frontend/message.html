@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h2>Message Page</h2>
+    <div id="lstmsg">
+
+    </div>
+    {% for i in chatobj %}
+        {% if i.useridOne.username == user %}
+        <a href="/text/{{i.msgRoomid}}">{{i.useridtwo.username}}</a>
+        {% else %}
+        <a href="/text/{{i.msgRoomid}}">{{i.useridOne.username}}</a>
+        {% endif %}
+        <br><br>
+    {% endfor %}
+    <script>
+        // user = '{{user}}'
+        // data = '{{chatobj}}'
+        // let msglist = document.getElementById('lstmsg')
+        // let item = ''
+        // for(let i in data){
+        //     item = `
+        //     <a href="/text/${i.msgRoomid}">${i.useridOne}</a>
+        //     `
+        //     msglist.innerHTML += item
+        // }
+    </script>
+</body>
+</html>

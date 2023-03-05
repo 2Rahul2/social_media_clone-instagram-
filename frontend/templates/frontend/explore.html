@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h3>EXPLORE {{request.user}}</h3>
+    <!-- EXPLORE  -->
+    <div id="post">
+        <div id="repeat-post">
+            <img src="" alt="">
+            <p id="cap"></p>
+            <p id="like"></p>
+            <p id="commentCount"></p>
+        </div>
+    </div>
+
+    <script>
+        function getCookie(name) {
+		    var cookieValue = null;
+		    if (document.cookie && document.cookie !== '') {
+		        var cookies = document.cookie.split(';');
+		        for (var i = 0; i < cookies.length; i++) {
+		            var cookie = cookies[i].trim();
+		            // Does this cookie string begin with the name we want?
+		            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+		                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+		                break;
+		            }
+		        }
+		    }
+		    return cookieValue;
+		}
+		var csrftoken = getCookie('csrftoken');
+        let list_of_id_post = []
+        let simplebool = false
+        let wrapper = document.getElementById('post')
+        let item = ''
+
+        window.onscroll = function(ev) {
+            if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight) {
+                console.log('AT END')
+                if(!simplebool){
+                    PostExploreRequest()
+                    simplebool =true
+                }
+            }
+        }
+
+        function PostExploreRequest(){
+            let url = "http://127.0.0.1:8000/api/explore-post/"
+            fetch(url , {
+                method:"POST",
+                headers:{
+                    'Content-type':'application/json',
+                    'X-CSRFToken':csrftoken,
+                },
+                body:JSON.stringify({
+                    'load':'more',
+                    'post_id':list_of_id_post
+                })
+            }).then((Response)=>
+                    Response.json()
+            ).then((data)=>{
+                console.log(data)
+                for(let i in data){
+                    list_of_id_post.push(data[i].id)
+
+                    item = `
+                    <img id='pimg' width = "50px" height = "50px" src="${data[i].profileimg.profileimage}" alt="">
+                    <a href="/profile/${data[i].user.username}">@${data[i].user.username}</a>
+                    <div id="repeat-post">
+                        <img width="460px" height="300px" src='http://127.0.0.1:8000${data[i].postimg}' alt="">                    
+                        <p id="cap">${data[i].caption}</p>
+                        <button id="likeme${data[i].id}">like</button><span id="like">${data[i].like_count}</span>
+                        <p id="commentCount">total comment ${data[i].comment_count}</p>
+
+                        <input type="text" id="com${data[i].id}">
+                        <button id="comment${data[i].id}">Add Comment</button>
+
+                    </div>
+                    `
+                    wrapper.innerHTML += item
+
+                }
+                simplebool=false
+            })
+        }
+
+
+        function explorepostlist(){
+            let url = "http://127.0.0.1:8000/api/explore-post/"
+            fetch(url).then((response)=>
+                response.json()
+            ).then(function (data){
+                console.log(data)
+                wrapper.innerHTML = ''
+                // console.log(data[0].postimg)
+                for(var i in data){
+                    list_of_id_post.push(data[i].id)
+                    console.log(data[i].profileimg.profileimage)
+                    item = `
+                    <img id='pimg' width = "50px" height = "50px" src="${data[i].profileimg.profileimage}" alt="">
+                    <a href="/profile/${data[i].user.username}">@${data[i].user.username}</a>
+                    <div id="repeat-post">
+                        <img width="460px" height="300px" src='http://127.0.0.1:8000${data[i].postimg}' alt="">                    
+                        <p id="cap">${data[i].caption}</p>
+                        <button id="likeme${data[i].id}">like</button><span id="like">${data[i].like_count}</span>
+                        <p id="commentCount">total comment ${data[i].comment_count}</p>
+
+                        <input type="text" id="com${data[i].id}">
+                        <button id="comment${data[i].id}">Add Comment</button>
+
+                    </div>
+                    `
+                    wrapper.innerHTML += item
+                    for(var j in data[i].commentM){
+                        let comments=''
+                        if(data[i].commentM[j].comment_user === u){
+                            comments = `
+                            <div>
+                                <p>@${data[i].commentM[j].comment_user} ${data[i].commentM[j].comment}</p>
+                                <button id="delcm${data[i].commentM[j].id}">delete</button>
+                            </div>
+                            `
+                        }else{
+                            comments = `
+                            <div>
+                                <p>@${data[i].commentM[j].comment_user} ${data[i].commentM[j].comment}</p>
+                            </div>
+                            `
+                        }
+                        wrapper.innerHTML +=  comments
+                    }
+                }
+                console.log(list_of_id_post)
+                for(var i in data){
+                    for(var j in data[i].commentM){
+                        if(data[i].commentM[j].comment_user === u){
+                            commentdeletebtn = document.getElementById(`delcm${data[i].commentM[j].id}`)
+                            let commentdata = data[i].commentM[j].id
+                            commentdeletebtn.addEventListener('click' ,(()=>{
+                                return ()=>{
+                                    deletecomment(commentdata)
+                                }
+                            })())
+                        }
+                    } 
+                }
+                for(var i in data){
+                    commentbtn = document.getElementById(`comment${data[i].id}`)
+                    let postdata = data[i]
+                    commentbtn.addEventListener('click' , (()=>{
+                        return ()=>{
+                            comment(postdata)
+                        }
+                    })())
+
+                }
+                for(var i in data){
+                    likebtn = document.getElementById(`likeme${data[i].id}`)
+                    let post_data = data[i]
+                    likebtn.addEventListener('click' , (()=>{
+                        return ()=>{
+                            likepost(post_data)
+                        }
+                    })())
+
+                }
+            })
+        }
+        explorepostlist()
+
+    </script>
+</body>
+</html>

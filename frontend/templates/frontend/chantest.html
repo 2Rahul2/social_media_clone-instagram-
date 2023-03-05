@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    
+    <h3>Channel Test</h3>
+    <form action="" id="form">
+        <input type="text" name="message" id="">
+        <input type="submit" value="submit">
+    </form>
+
+
+
+    <div id="msg">
+        
+    </div>
+
+
+    <script>
+
+        let groupName = '{{group_name}}'
+        let wurl = `ws://${window.location.host}/ws/socket-server/${groupName}/`
+        let chatSocket = new WebSocket(wurl)
+        let wrapper = document.getElementById('msg')
+        let item = ''
+        chatSocket.onmessage = function(e){
+            let data = JSON.parse(e.data)
+            if (data['type'] === 'chat'){
+                let msg = data['message']
+                console.log(msg)
+                item = `
+                <p>${msg}</p>
+                `
+                wrapper.innerHTML += item
+            }
+            // console.log("socket data: " ,data)
+        }
+        let form = document.getElementById('form')
+        form.addEventListener('submit' , (e)=>{
+            e.preventDefault()
+            let message = e.target.message.value
+            chatSocket.send(JSON.stringify({
+                'message': message
+            }))
+            form.reset()
+        })
+
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,344 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        #pimg{
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body>
+    <h1>Testing</h1>
+    <h3>{{user}}</h3> 
+    <a href="/message">messages</a>
+    <a href="/profile/{{user}}">Profile</a>
+    <h3><a href="logout">logout</a></h3>
+    <!-- {% for i in requestUser %}
+    <p>{{i.fromuser.username}}</p>
+    {% endfor %} -->
+
+    <div id="reqUser">
+
+    </div>
+    <form id="searchform">
+        <input onchange="changedetected()" type="search" name="" id="search">
+        <button type="submit">submit</button>
+    </form>
+    <form id="form">
+        {% csrf_token %}
+    <p>Upload Pics</p>
+    <label for="">caption</label>
+    <input type="text" id="cap">
+    <br>
+    <input type="file" id="imageUrl">
+    <input type="submit">
+    <a href="http://127.0.0.1:8000/api/like-post/ce1a03a4-a8c3-4365-99fd-00349be45e44">click me</a>
+    </form>
+    
+    <div id="post">
+        <div id="repeat-post">
+            <img src="" alt="">
+            <p id="cap"></p>
+            <p id="like"></p>
+            <p id="commentCount"></p>
+        </div>
+    </div>
+    <!-- <div id="">
+        <img src="" alt="">
+        <p id=""></p>
+         <p id=""></p>
+        <button></button> <p id=""></p>
+    </div> -->
+    <script>
+        
+        // searchvalue.onchange = changedetected
+        // searchvalue.onblur = changedetected
+        function getCookie(name) {
+		    var cookieValue = null;
+		    if (document.cookie && document.cookie !== '') {
+		        var cookies = document.cookie.split(';');
+		        for (var i = 0; i < cookies.length; i++) {
+		            var cookie = cookies[i].trim();
+		            // Does this cookie string begin with the name we want?
+		            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+		                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+		                break;
+		            }
+		        }
+		    }
+		    return cookieValue;
+		}
+		var csrftoken = getCookie('csrftoken');
+        var u = '{{user}}'
+        var requestuserlist = '{{requestUser}}'
+        let searchvalue = document.getElementById('search')
+        function changedetected(){
+            let newname = searchvalue.value
+            url = "http://127.0.0.1:8000/api/searchuser/"
+            fetch(url ,{
+                method:"POST",
+                headers:{
+                    'Content-type':'application/json',
+                    'X-CSRFToken':csrftoken,
+                },
+                body:JSON.stringify({
+                    'value':searchvalue.value
+                })
+            }).then((Response)=>
+            Response.json()
+            ).then((searchdata)=>{
+                for(let i in searchdata){
+                    console.log(searchdata[i].user.username)
+                }
+                // console.log("search repsonse:  ",searchdata)
+            })
+            // console.log(newname)
+        }
+        //  let wurl = `ws://${window.location.host}/ws/socket-server/`
+        // let chatSocket = new WebSocket(wurl)
+        // chatSocket.onmessage = function(e){
+        //     let data = JSON.parse(e.data)
+        //     console.log("socket data: " ,data)
+        // } 
+
+
+
+
+
+
+        function requestlist(){
+            let requesturl ='http://127.0.0.1:8000/api/requestuser-list/'
+            fetch(requesturl).then((response)=>
+            response.json()).then(function (data){
+                // console.log(data[0].fromuser)
+                requestWrapper = document.getElementById('reqUser')
+                requestWrapper.innerHTML= ''
+                for(let i in data){
+                    reqItem = data[i].reuestuser['username']
+                    let element = `
+                    <a href='/profile/${reqItem}'>Request User: ${reqItem}</a>
+                    <button id='rejectbtn${data[i].id}'>Reject</button>
+                    <button id='followback${data[i].id}'>Follow</button>
+                    <br><br>
+                    `
+                    requestWrapper.innerHTML += element
+                }
+
+                for(let j in data){
+                    rejectbtn = document.getElementById(`rejectbtn${data[j].id}`)
+                    let rejectdata = data[j]
+                    rejectbtn.addEventListener('click' , (()=>{
+                        return ()=>{
+                            rejectbtnfun(rejectdata , 'rejected')
+                        }
+                    })())
+
+                    followbackbtn = document.getElementById(`followback${data[j].id}`)
+                    // let rejectdata = data[j]
+                    followbackbtn.addEventListener('click' , (()=>{
+                        return ()=>{
+                            rejectbtnfun(rejectdata , 'follow')
+                        }
+                    })())
+                }
+
+            })
+            // let reqItem = ""
+            // console.log(requestuserlist)
+        }
+        function rejectbtnfun(data , status){
+            console.log(data)
+            postRequest_url = 'http://127.0.0.1:8000/api/post-request-user/'
+            fetch(postRequest_url,{
+                method:'POST',
+                headers:{
+                    'Content-type':'application/json',
+                    'X-CSRFToken':csrftoken,
+                },
+                body:JSON.stringify({
+                    'fromuser':data.reuestuser.username,
+                    'touser':u,
+                    'status':status
+                })
+            }).then((Response)=>{
+                console.log('rejected')
+                console.log(Response)
+                requestlist()
+            })
+        }
+        requestlist()
+        function postlist(){
+            posturl = "http://127.0.0.1:8000/api/post-list/"
+            let wrapper = document.getElementById('post')
+            fetch(posturl).then((response)=>
+                response.json()
+            ).then(function (data){
+                wrapper.innerHTML = ''
+           
+                for(var i in data){
+                    console.log(data[i].profileimg.profileimage)
+                    let item = `
+                    <img id='pimg' width = "50px" height = "50px" src="${data[i].profileimg.profileimage}" alt="">
+                    <a href="/profile/${data[i].user.username}">@${data[i].user.username}</a>
+                    <div id="repeat-post">
+                        <img width="460px" height="300px" src='http://127.0.0.1:8000${data[i].postimg}' alt="">                    
+                        <p id="cap">${data[i].caption}</p>
+                        <button id="likeme${data[i].id}">like</button><span id="like">${data[i].like_count}</span>
+                        <p id="commentCount">total comment ${data[i].comment_count}</p>
+
+                        <input type="text" id="com${data[i].id}">
+                        <button id="comment${data[i].id}">Add Comment</button>
+
+                    </div>
+                    `
+                    wrapper.innerHTML += item
+                    for(var j in data[i].commentM){
+                        let comments=''
+                        if(data[i].commentM[j].comment_user === u){
+                            comments = `
+                            <div>
+                                <p>@${data[i].commentM[j].comment_user} ${data[i].commentM[j].comment}</p>
+                                <button id="delcm${data[i].commentM[j].id}">delete</button>
+                            </div>
+                            `
+                        }else{
+                            comments = `
+                            <div>
+                                <p>@${data[i].commentM[j].comment_user} ${data[i].commentM[j].comment}</p>
+                            </div>
+                            `
+                        }
+                        wrapper.innerHTML +=  comments
+                    }
+                }
+
+                for(var i in data){
+                    for(var j in data[i].commentM){
+                        if(data[i].commentM[j].comment_user === u){
+                            commentdeletebtn = document.getElementById(`delcm${data[i].commentM[j].id}`)
+                            let commentdata = data[i].commentM[j].id
+                            commentdeletebtn.addEventListener('click' ,(()=>{
+                                return ()=>{
+                                    deletecomment(commentdata)
+                                }
+                            })())
+                        }
+                    } 
+                }
+                for(var i in data){
+                    commentbtn = document.getElementById(`comment${data[i].id}`)
+                    let postdata = data[i]
+                    commentbtn.addEventListener('click' , (()=>{
+                        return ()=>{
+                            comment(postdata)
+                        }
+                    })())
+
+                }
+                for(var i in data){
+                    likebtn = document.getElementById(`likeme${data[i].id}`)
+                    let post_data = data[i]
+                    likebtn.addEventListener('click' , (()=>{
+                        return ()=>{
+                            likepost(post_data)
+                        }
+                    })())
+
+                }
+            })
+        }
+        // tasks: messaging , groups , profilepage , 
+        postlist()
+        function deletecomment(data){
+            console.log(data)
+            commentUrl = `http://127.0.0.1:8000/api/comment-post/`
+            fetch(commentUrl ,{
+                method:'POST',
+                headers:{
+                    'Content-type':'application/json',
+                    'X-CSRFToken':csrftoken,
+                },
+                body:JSON.stringify({
+                    'met':'delete',
+                    'id':data,
+                })
+            }).then((Response)=>{
+                postlist()
+            })
+        }
+        function comment(post_data){
+            console.log(post_data)
+            commentUrl = `http://127.0.0.1:8000/api/comment-post/`
+            comment_value = document.getElementById(`com${post_data.id}`)
+
+            fetch(commentUrl , {
+                method:'POST',
+                headers:{
+                    'Content-type':'application/json',
+                    'X-CSRFToken':csrftoken,
+                },body:JSON.stringify({
+                    'post_id':post_data.id,
+                    'comment':comment_value.value,
+                    'comment_user':u,
+                })
+            }).then((Response)=>{
+                console.log('comment sent')
+                comment_value.value = ''
+                postlist()
+            })
+        }
+        function likepost(post_data){
+            console.log(post_data.id)
+            url = `http://127.0.0.1:8000/api/like-post/`
+            fetch(url, {
+                method:"POST",
+                headers:{
+                    'Content-type':'application/json',
+                    'X-CSRFToken':csrftoken,
+                },body:JSON.stringify({
+                    "post_id":post_data.id,
+                    "like_user":u,
+                })
+            }).then((Response)=>{
+                // console.log("hehehheh")
+                postlist()
+            })
+        }
+        let form = document.getElementById('form')
+        form.addEventListener('submit' , (e)=>{
+            let formdata = new FormData()
+            e.preventDefault()
+            console.log("submited")
+            let caption = document.querySelector('#cap').value
+            let img = document.querySelector('#imageUrl').files[0]
+
+            formdata.append('caption' , caption)
+            formdata.append('postimg' , img)
+            formdata.append('userN', u)
+            console.log(formdata)
+            url = "http://127.0.0.1:8000/api/create-post/"
+            fetch(url , {
+                method:'POST',
+                headers:{
+                    
+                    'X-CSRFToken':csrftoken,
+                },
+                body:formdata
+            }).then((Response)=>{
+                console.log("Sent")
+                form.reset()
+                postlist()
+            })
+        })
+
+    </script>
+</body>
+</html>
+
+

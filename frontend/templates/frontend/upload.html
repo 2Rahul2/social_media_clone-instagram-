@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        h1 {padding: 40px; text-align: center; font-size: 1.5em;}
+
+li a {text-decoration : none; color : #2d2f31;}
+
+/* 
+nav {
+  width : 300px; 
+  background: #d9d9d9;
+  margin : 40px auto; 
+} */
+
+#spanheh{
+    border-radius: 5px;
+    padding : 5px;
+    padding-left: 1.5rem;
+    padding-right: 5rem;
+    width: 11rem;
+  background : #cc0044; 
+  color : white;
+  font-size : 1.2em;
+  /* font-variant : small-caps; */
+  cursor : pointer;
+  display: block;
+}
+
+#spanheh::after {
+  float: right;
+  right: 10%;
+  content: "+";
+}
+
+#subbutn{
+    width: 120px;
+    height: 30px;
+    border: none;
+    outline: none;
+    background: #ff0055;
+    color: #fff;
+    font-size: 18px;
+    border-radius: 5px;
+    text-align: center;
+    /* box-shadow: 0 6px 20px -5px rgba(0,0,0,0.4); */
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.slide {
+  clear:both;
+  /* width:100%; */
+  height:0px;
+  overflow: hidden;
+  /* text-align: center; */
+  transition: height .4s ease;
+}
+.uploadlabel{
+    border-radius: 5px;
+    padding: 2px;
+    padding-left: 12px;
+    padding-right:  12px;
+    background: #ff0055; 
+    display: table;
+    color: #fff;
+     }
+
+
+
+.inputfile{
+    display: none;
+}
+
+.slide li {padding-top : 5px;}
+
+#touch {position: absolute; opacity: 0; height: 0px;}    
+
+#touch:checked + .slide {height: 300px;} 
+    </style>
+</head>
+<body>
+    <label for="touch"><span id="spanheh">Upload</span></label>               
+  <input type="checkbox" id="touch"> 
+
+  <ul class="slide">
+      <form id="form">
+        {% csrf_token %}
+
+          <li><label class="uploadlabel">Select Image
+            <input id="imageUrl" class="inputfile" type="file" size="60" >
+            </label> </li>
+            <!-- <li><input type="file" name="" id=""></li> -->
+        <li><input style="height: 25px;" type="text" name=""  placeholder="Caption" id="cap"></li>
+        <li><input type="submit"  id="subbutn">submit</li>
+      </form>
+   
+  </ul>
+</body>
+</html>
