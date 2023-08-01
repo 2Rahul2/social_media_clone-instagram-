@@ -64,10 +64,10 @@ class ChatConsumer(WebsocketConsumer):
             self.groupname,
             self.channel_name,
         )
-        # self.send(text_data = json.dumps({
-        #     'type':'connection-established',
-        #     'message':"hello there",
-        # }))
+        self.send(text_data = json.dumps({
+            'type':'connection-established',
+            'message':"hello there",
+        }))
 
     def receive(self , text_data):
 
